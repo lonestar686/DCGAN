@@ -30,21 +30,19 @@ class Discriminator(Module):
         self.dense = dense(1)
         self.sigmoid = activation('sigmoid')
 
-    def forward(self, x, reuse):
+    def forward(self, x, reuse, training):
 
-        with tf.variable_scope('discriminator', reuse=reuse):
+        with tf.variable_scope('discriminator'):
             # Input layer is 32x32x?
             conv1 = self.conv1(x)
             conv1 = self.lrelu1(conv1)
             
             conv2 = self.conv2(conv1)
-            #conv2 = self.batch_norm2(conv2)
-            conv2 = batch_norm()(conv2)
+            conv2 = self.batch_norm2(conv2, training=training)
             conv2 = self.lrelu2(conv2)
             
             conv3 = self.conv3(conv2)
-            #conv3 = self.batch_norm3(conv3)
-            conv3 = batch_norm()(conv3)
+            conv3 = self.batch_norm3(conv3, training=training)
             conv3 = self.lrelu3(conv3)
 
             # Flatten it

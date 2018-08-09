@@ -16,7 +16,7 @@ import zipfile
 import utils
 
 # set GPU node
-os.environ['CUDA_VISIBLE_DEVICES'] = '0'
+os.environ['CUDA_VISIBLE_DEVICES'] = '2'
 
 # Getting the data
 # This implementation is built to support two datasets, The Street View House Numbers (SVHN) and the MNIST dataset. 
@@ -68,38 +68,38 @@ def model_inputs(real_dim, z_dim):
     return inputs_real, inputs_z
 
 # the original implementation
-from generator_discriminator import generator, discriminator
-# from Discriminator import Discriminator
-# from Generator import Generator
+#from generator_discriminator import generator, discriminator
+from Discriminator import Discriminator
+from Generator import Generator
 
-# #
-# output_dim = dataset.images().shape[3]
-# g = Generator(output_dim)
+#
+output_dim = dataset.images().shape[3]
+g = Generator(output_dim)
 
-# def generator(z, output_dim, reuse=False, alpha=0.2, training=True):
-#     """
-#     Generator network
-#     :param z: input random vector z
-#     :param output_dim: output dimension of the network
-#     :param reuse: Indicates whether or not the existing model variables should be used or recreated
-#     :param alpha: scalar for lrelu activation function
-#     :param training: Boolean for controlling the batch normalization statistics
-#     :return: model's output
-#     """
-#     return g(z, reuse)
+def generator(z, output_dim, reuse=False, alpha=0.2, training=True):
+    """
+    Generator network
+    :param z: input random vector z
+    :param output_dim: output dimension of the network
+    :param reuse: Indicates whether or not the existing model variables should be used or recreated
+    :param alpha: scalar for lrelu activation function
+    :param training: Boolean for controlling the batch normalization statistics
+    :return: model's output
+    """
+    return g(z, reuse, training=training)
 
-# #
-# d = Discriminator(alpha=0.2)
-# def discriminator(x, reuse=False, alpha=0.2, training=True):
-#     """
-#     Discriminator network
-#     :param x: input for network
-#     :param reuse: Indicates whether or not the existing model variables should be used or recreated
-#     :param alpha: scalar for lrelu activation function
-#     :param training: Boolean for controlling the batch normalization statistics
-#     :return: A tuple of (sigmoid probabilities, logits)
-#     """
-#     return d(x, reuse)
+#
+d = Discriminator(alpha=0.2)
+def discriminator(x, reuse=False, alpha=0.2, training=True):
+    """
+    Discriminator network
+    :param x: input for network
+    :param reuse: Indicates whether or not the existing model variables should be used or recreated
+    :param alpha: scalar for lrelu activation function
+    :param training: Boolean for controlling the batch normalization statistics
+    :return: A tuple of (sigmoid probabilities, logits)
+    """
+    return d(x, reuse, training=training)
 
 # Model Loss
 # We know that the discriminator receives images from both, the training set and from the generator. 
@@ -166,8 +166,9 @@ def model_optimizers(d_loss, g_loss, learning_rate, beta1):
     t_vars = tf.trainable_variables()
     for var in t_vars:
         print(var)
+    print('------------------')
     for op in tf.get_collection(tf.GraphKeys.UPDATE_OPS):
-        print(op)
+        print(op.name)
     d_vars = [var for var in t_vars if var.name.startswith('discriminator')]
     g_vars = [var for var in t_vars if var.name.startswith('generator')]
 

@@ -39,26 +39,23 @@ class Generator(Module):
         
         self.tanh = activation('tanh')
 
-    def forward(self, z, reuse):
+    def forward(self, z, reuse, training):
 
-        with tf.variable_scope('generator', reuse=tf.AUTO_REUSE):
+        with tf.variable_scope('generator'):
 
             fc1 = self.dense(z)
             
             # Reshape it to start the convolutional stack
             fc1 = self.reshape(fc1)
-            #fc1 = self.batch_norm1(fc1)
-            fc1 = batch_norm()(fc1)
+            fc1 = self.batch_norm1(fc1, training=training)
             fc1 = self.relu1(fc1)
             
             t_conv1 = self.transpose_conv2d_2(fc1)
-            #t_conv1 = self.batch_norm2(t_conv1)
-            t_conv1 = batch_norm()(t_conv1)
+            t_conv1 = self.batch_norm2(t_conv1, training=training)
             t_conv1 = self.relu2(t_conv1)
             
             t_conv2 = self.transpose_conv2d_3(t_conv1)
-            #t_conv2 = self.batch_norm3(t_conv2)
-            t_conv2 = batch_norm()(t_conv2)
+            t_conv2 = self.batch_norm3(t_conv2, training=training)
             t_conv2 = self.relu3(t_conv2)
             
             logits = self.transpose_conv2d_4(t_conv2)
