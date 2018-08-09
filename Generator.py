@@ -5,20 +5,6 @@ from network_keras import batch_norm, reshape, activation
 
 import tensorflow as tf
 
-def generator(z, output_dim, reuse=False, alpha=0.2, training=True):
-    """
-    Generator network
-    :param z: input random vector z
-    :param output_dim: output dimension of the network
-    :param reuse: Indicates whether or not the existing model variables should be used or recreated
-    :param alpha: scalar for lrelu activation function
-    :param training: Boolean for controlling the batch normalization statistics
-    :return: model's output
-    """
-    g = Generator(output_dim)
-
-    return g(z)
-
 class Generator(Module):
     """ generator
         The network has 4 convolutional layers, all of them followed by batch normalization 
@@ -34,28 +20,28 @@ class Generator(Module):
     """
     def __init__(self, output_dim):
 
-        with tf.variable_scope('generator'):
+        self.dense = dense(4*4*512)
+        
+        # Reshape it to start the convolutional stack
+        self.reshape = reshape((4, 4, 512))
+        self.batch_norm1 = batch_norm()
+        self.relu1 = activation('relu')
+        
+        self.transpose_conv2d_2 = transpose_conv2d(256)
+        self.batch_norm2 = batch_norm()
+        self.relu2 = activation('relu')
+        
+        self.transpose_conv2d_3 = transpose_conv2d(128)
+        self.batch_norm3 = batch_norm()
+        self.relu3 = activation('relu')
+        
+        self.transpose_conv2d_4= transpose_conv2d(output_dim)
+        
+        self.tanh = activation('tanh')
 
-            self.dense = dense(4*4*512)
-            
-            # Reshape it to start the convolutional stack
-            self.reshape = reshape((4, 4, 512))
-            self.batch_norm1 = batch_norm()
-            self.relu1 = activation('relu')
-            
-            self.transpose_conv2d_2 = transpose_conv2d(256)
-            self.batch_norm2 = batch_norm()
-            self.relu2 = activation('relu')
-            
-            self.transpose_conv2d_3 = transpose_conv2d(128)
-            self.batch_norm3 = batch_norm()
-            self.relu3 = activation('relu')
-            
-            self.transpose_conv2d_4= transpose_conv2d(output_dim)
-            
-            self.tanh = activation('tanh')
+    def forward(self, z, reuse):
 
-    def forward(self, z):
+        #with tf.variable_scope('generator', reuse=reuse):
 
         fc1 = self.dense(z)
         

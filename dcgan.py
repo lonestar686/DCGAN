@@ -16,7 +16,7 @@ import zipfile
 import utils
 
 # set GPU node
-os.environ['CUDA_VISIBLE_DEVICES'] = '2'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 # Getting the data
 # This implementation is built to support two datasets, The Street View House Numbers (SVHN) and the MNIST dataset. 
@@ -69,8 +69,38 @@ def model_inputs(real_dim, z_dim):
 
 # the original implementation
 #from generator_discriminator import generator, discriminator
-from Discriminator import discriminator
-from Generator import generator
+from Discriminator import Discriminator
+from Generator import Generator
+
+#
+output_dim = dataset.images().shape[3]
+print('-----------', output_dim)
+g = Generator(output_dim)
+
+def generator(z, output_dim, reuse=False, alpha=0.2, training=True):
+    """
+    Generator network
+    :param z: input random vector z
+    :param output_dim: output dimension of the network
+    :param reuse: Indicates whether or not the existing model variables should be used or recreated
+    :param alpha: scalar for lrelu activation function
+    :param training: Boolean for controlling the batch normalization statistics
+    :return: model's output
+    """
+    return g(z, reuse)
+
+#
+d = Discriminator(alpha=0.2)
+def discriminator(x, reuse=False, alpha=0.2, training=True):
+    """
+    Discriminator network
+    :param x: input for network
+    :param reuse: Indicates whether or not the existing model variables should be used or recreated
+    :param alpha: scalar for lrelu activation function
+    :param training: Boolean for controlling the batch normalization statistics
+    :return: A tuple of (sigmoid probabilities, logits)
+    """
+    return d(x, reuse)
 
 # Model Loss
 # We know that the discriminator receives images from both, the training set and from the generator. 
@@ -88,11 +118,14 @@ def model_loss(input_real, input_z, output_dim, alpha=0.2, smooth=0.1):
     :param smooth: label smothing scalar 
     :return: A tuple of (discriminator loss, generator loss)
     """
-    g_model = generator(input_z, output_dim, alpha=alpha)
-    d_model_real, d_logits_real = discriminator(input_real, alpha=alpha)
+    with tf.variable_scope('generator'):
+        g_model = generator(input_z, output_dim, alpha=alpha)
+    with tf.name_scope('discriminator_real'):
+        d_model_real, d_logits_real = discriminator(input_real, alpha=alpha)
     tf.summary.scalar('mean_discriminator_output_prob_real', tf.reduce_mean(d_model_real))
         
-    d_model_fake, d_logits_fake = discriminator(g_model, reuse=True, alpha=alpha)
+    with tf.name_scope('discriminator_fake'):
+        d_model_fake, d_logits_fake = discriminator(g_model, reuse=True, alpha=alpha)
     tf.summary.scalar('mean_discriminator_output_prob_fake', tf.reduce_mean(d_model_fake))
     
     # for the real image from the training set, we want them to be classified as positives,  
@@ -152,7 +185,7 @@ real_size = dataset.images().shape[1:]
 z_size = 100
 learning_rate = 0.0002
 batch_size = 128
-epochs = 1
+epochs = 10
 alpha = 0.2
 beta1 = 0.5
 
