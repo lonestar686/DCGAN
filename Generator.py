@@ -41,7 +41,7 @@ class Generator(Module):
 
     def forward(self, z, reuse, training):
 
-        with tf.variable_scope('generator'):
+        with tf.variable_scope('generator', reuse=reuse):
 
             fc1 = self.dense(z)
             

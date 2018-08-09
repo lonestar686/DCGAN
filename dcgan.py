@@ -162,21 +162,24 @@ def model_optimizers(d_loss, g_loss, learning_rate, beta1):
     :param beta1: The exponential decay rate for the 1st moment in the optimizer
     :return: A tuple of (discriminator training operation, generator training operation)
     """
-    # Get weights and bias variables for each network
     t_vars = tf.trainable_variables()
-    for var in t_vars:
-        print(var)
-    print('------------------')
-    for op in tf.get_collection(tf.GraphKeys.UPDATE_OPS):
-        print(op.name)
+    # Get weights and bias variables for each network
     d_vars = [var for var in t_vars if var.name.startswith('discriminator')]
     g_vars = [var for var in t_vars if var.name.startswith('generator')]
 
     # Because the batch norm layers are not part of the graph we inforce these operation to run before the 
     # optimizers so the batch normalization layers can update their population statistics.
-    with tf.control_dependencies(tf.get_collection(tf.GraphKeys.UPDATE_OPS)):
+    extra_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
+    with tf.control_dependencies(extra_ops):
         d_train_opt = tf.train.AdamOptimizer(learning_rate, beta1=beta1).minimize(d_loss, var_list=d_vars)
         g_train_opt = tf.train.AdamOptimizer(learning_rate, beta1=beta1).minimize(g_loss, var_list=g_vars)
+
+    # for qc purpose
+    for var in t_vars:
+        print(var)
+    print('------------------')
+    for op in extra_ops:
+        print(op.name)
 
     return d_train_opt, g_train_opt
 

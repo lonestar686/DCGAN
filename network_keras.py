@@ -32,7 +32,7 @@ def lrelu(alpha=0.2):
 def batch_norm(epsilon=1e-5, momentum=0.9):
     initializer = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.02)
     return tf.keras.layers.BatchNormalization(epsilon=epsilon, momentum=momentum, 
-                                                gamma_initializer=initializer)
+                                                gamma_initializer=initializer, fused=False)
     
 def activation(act):
     return tf.keras.layers.Activation(act)

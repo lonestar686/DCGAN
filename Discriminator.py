@@ -32,7 +32,7 @@ class Discriminator(Module):
 
     def forward(self, x, reuse, training):
 
-        with tf.variable_scope('discriminator'):
+        with tf.variable_scope('discriminator', reuse=reuse):
             # Input layer is 32x32x?
             conv1 = self.conv1(x)
             conv1 = self.lrelu1(conv1)
