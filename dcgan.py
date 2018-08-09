@@ -68,39 +68,38 @@ def model_inputs(real_dim, z_dim):
     return inputs_real, inputs_z
 
 # the original implementation
-#from generator_discriminator import generator, discriminator
-from Discriminator import Discriminator
-from Generator import Generator
+from generator_discriminator import generator, discriminator
+# from Discriminator import Discriminator
+# from Generator import Generator
 
-#
-output_dim = dataset.images().shape[3]
-print('-----------', output_dim)
-g = Generator(output_dim)
+# #
+# output_dim = dataset.images().shape[3]
+# g = Generator(output_dim)
 
-def generator(z, output_dim, reuse=False, alpha=0.2, training=True):
-    """
-    Generator network
-    :param z: input random vector z
-    :param output_dim: output dimension of the network
-    :param reuse: Indicates whether or not the existing model variables should be used or recreated
-    :param alpha: scalar for lrelu activation function
-    :param training: Boolean for controlling the batch normalization statistics
-    :return: model's output
-    """
-    return g(z, reuse)
+# def generator(z, output_dim, reuse=False, alpha=0.2, training=True):
+#     """
+#     Generator network
+#     :param z: input random vector z
+#     :param output_dim: output dimension of the network
+#     :param reuse: Indicates whether or not the existing model variables should be used or recreated
+#     :param alpha: scalar for lrelu activation function
+#     :param training: Boolean for controlling the batch normalization statistics
+#     :return: model's output
+#     """
+#     return g(z, reuse)
 
-#
-d = Discriminator(alpha=0.2)
-def discriminator(x, reuse=False, alpha=0.2, training=True):
-    """
-    Discriminator network
-    :param x: input for network
-    :param reuse: Indicates whether or not the existing model variables should be used or recreated
-    :param alpha: scalar for lrelu activation function
-    :param training: Boolean for controlling the batch normalization statistics
-    :return: A tuple of (sigmoid probabilities, logits)
-    """
-    return d(x, reuse)
+# #
+# d = Discriminator(alpha=0.2)
+# def discriminator(x, reuse=False, alpha=0.2, training=True):
+#     """
+#     Discriminator network
+#     :param x: input for network
+#     :param reuse: Indicates whether or not the existing model variables should be used or recreated
+#     :param alpha: scalar for lrelu activation function
+#     :param training: Boolean for controlling the batch normalization statistics
+#     :return: A tuple of (sigmoid probabilities, logits)
+#     """
+#     return d(x, reuse)
 
 # Model Loss
 # We know that the discriminator receives images from both, the training set and from the generator. 
@@ -118,14 +117,14 @@ def model_loss(input_real, input_z, output_dim, alpha=0.2, smooth=0.1):
     :param smooth: label smothing scalar 
     :return: A tuple of (discriminator loss, generator loss)
     """
-    with tf.variable_scope('generator'):
-        g_model = generator(input_z, output_dim, alpha=alpha)
-    with tf.name_scope('discriminator_real'):
-        d_model_real, d_logits_real = discriminator(input_real, alpha=alpha)
+    #with tf.variable_scope('generator'):
+    g_model = generator(input_z, output_dim, alpha=alpha)
+    #with tf.name_scope('discriminator_real'):
+    d_model_real, d_logits_real = discriminator(input_real, alpha=alpha)
     tf.summary.scalar('mean_discriminator_output_prob_real', tf.reduce_mean(d_model_real))
         
-    with tf.name_scope('discriminator_fake'):
-        d_model_fake, d_logits_fake = discriminator(g_model, reuse=True, alpha=alpha)
+    #with tf.name_scope('discriminator_fake'):
+    d_model_fake, d_logits_fake = discriminator(g_model, reuse=True, alpha=alpha)
     tf.summary.scalar('mean_discriminator_output_prob_fake', tf.reduce_mean(d_model_fake))
     
     # for the real image from the training set, we want them to be classified as positives,  
